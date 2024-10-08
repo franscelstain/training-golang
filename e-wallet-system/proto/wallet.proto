@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package wallet;
+
+option go_package = "proto/wallet"; // Menentukan nama package Go
+
+// Request and Response messages for user
+message UserRequest {
+  string user_id = 1;
+}
+
+message UserResponse {
+  string user_id = 1;
+  string name = 2;
+  string email = 3;
+  double balance = 4;
+}
+
+// Request and Response messages for wallet operations
+message TopUpRequest {
+  string user_id = 1;
+  double amount = 2;
+}
+
+message TransferRequest {
+  string from_user_id = 1;
+  string to_user_id = 2;
+  double amount = 3;
+}
+
+message TransactionListRequest {
+  string user_id = 1;
+}
+
+message Transaction {
+  string id = 1;
+  string type = 2; // "topup" or "transfer"
+  double amount = 3;
+  string created_at = 4;
+}
+
+message TransactionListResponse {
+  repeated Transaction transactions = 1;
+}
+
+// User service definition
+service UserService {
+  rpc GetUser(UserRequest) returns (UserResponse);
+}
+
+// Wallet service definition
+service WalletService {
+  rpc TopUp(TopUpRequest) returns (UserResponse);
+  rpc Transfer(TransferRequest) returns (UserResponse);
+  rpc GetTransactionList(TransactionListRequest) returns (TransactionListResponse);
+}
