@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package wallet;
+package wallet.v1; // Lebih spesifik dengan versi
 
-option go_package = "proto/wallet"; // Menentukan nama package Go
+option go_package = "proto/wallet/v1;walletpb";
 
 // Request and Response messages for user
 message UserRequest {

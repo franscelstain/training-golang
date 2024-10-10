@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.0
-// source: wallet.proto
+// source: wallet/v1/wallet.proto
 
-package wallet
+package walletpb
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_GetUser_FullMethodName = "/wallet.UserService/GetUser"
+	UserService_GetUser_FullMethodName = "/wallet.v1.UserService/GetUser"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -112,7 +112,7 @@ func _UserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wallet.UserService",
+	ServiceName: "wallet.v1.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -121,13 +121,13 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "wallet.proto",
+	Metadata: "wallet/v1/wallet.proto",
 }
 
 const (
-	WalletService_TopUp_FullMethodName              = "/wallet.WalletService/TopUp"
-	WalletService_Transfer_FullMethodName           = "/wallet.WalletService/Transfer"
-	WalletService_GetTransactionList_FullMethodName = "/wallet.WalletService/GetTransactionList"
+	WalletService_TopUp_FullMethodName              = "/wallet.v1.WalletService/TopUp"
+	WalletService_Transfer_FullMethodName           = "/wallet.v1.WalletService/Transfer"
+	WalletService_GetTransactionList_FullMethodName = "/wallet.v1.WalletService/GetTransactionList"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -286,7 +286,7 @@ func _WalletService_GetTransactionList_Handler(srv interface{}, ctx context.Cont
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var WalletService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wallet.WalletService",
+	ServiceName: "wallet.v1.WalletService",
 	HandlerType: (*WalletServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -303,5 +303,5 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "wallet.proto",
+	Metadata: "wallet/v1/wallet.proto",
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"user_server/proto/wallet" // Pastikan path import sesuai dengan hasil kompilasi Protobuf
+	walletpb "eWalletSystem/proto/wallet/v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,12 +13,12 @@ import (
 )
 
 type UserServiceServer struct {
-	wallet.UnimplementedUserServiceServer // Tambahkan ini untuk kompatibilitas
-	users                                 map[string]*wallet.UserResponse
+	walletpb.UnimplementedUserServiceServer // Tambahkan ini untuk kompatibilitas
+	users                                   map[string]*walletpb.UserResponse
 }
 
 // GetUser mengimplementasikan method GetUser yang didefinisikan di wallet.proto
-func (s *UserServiceServer) GetUser(ctx context.Context, req *wallet.UserRequest) (*wallet.UserResponse, error) {
+func (s *UserServiceServer) GetUser(ctx context.Context, req *walletpb.UserRequest) (*walletpb.UserResponse, error) {
 	user, exists := s.users[req.UserId]
 	if !exists {
 		return nil, status.Errorf(codes.NotFound, "User tidak ditemukan")
@@ -32,14 +32,14 @@ func main() {
 
 	// Inisialisasi UserServiceServer dengan data in-memory
 	userService := &UserServiceServer{
-		users: map[string]*wallet.UserResponse{
+		users: map[string]*walletpb.UserResponse{
 			"user1": {UserId: "user1", Name: "John Doe", Email: "john@example.com", Balance: 1000},
 			"user2": {UserId: "user2", Name: "Jane Smith", Email: "jane@example.com", Balance: 1500},
 		},
 	}
 
 	// Mendaftarkan UserServiceServer ke gRPC server
-	wallet.RegisterUserServiceServer(server, userService)
+	walletpb.RegisterUserServiceServer(server, userService)
 
 	// Mendengarkan di port 50051
 	lis, err := net.Listen("tcp", ":50051")

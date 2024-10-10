@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"aggregator_server/proto/wallet" // Pastikan path sesuai dengan hasil generate Protobuf
+	walletpb "eWalletSystem/proto/wallet/v1"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	// Koneksi ke User Server di port 50051
@@ -21,7 +22,7 @@ func main() {
 		log.Fatalf("Gagal terhubung ke User Server: %v", err)
 	}
 	defer userConn.Close()
-	userClient := wallet.NewUserServiceClient(userConn)
+	userClient := walletpb.NewUserServiceClient(userConn)
 
 	// Koneksi ke Wallet Server di port 50052
 	walletConn, err := grpc.Dial("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -29,21 +30,21 @@ func main() {
 		log.Fatalf("Gagal terhubung ke Wallet Server: %v", err)
 	}
 	defer walletConn.Close()
-	walletClient := wallet.NewWalletServiceClient(walletConn)
+	walletClient := walletpb.NewWalletServiceClient(walletConn)
 
 	// Endpoint untuk mendapatkan data user beserta saldo dan transaksi
 	router.GET("/user/:id", func(c *gin.Context) {
 		userId := c.Param("id")
 
 		// Memanggil User Server untuk mendapatkan data user
-		userResp, err := userClient.GetUser(context.Background(), &wallet.UserRequest{UserId: userId})
+		userResp, err := userClient.GetUser(context.Background(), &walletpb.UserRequest{UserId: userId})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "User tidak ditemukan"})
 			return
 		}
 
 		// Memanggil Wallet Server untuk mendapatkan daftar transaksi user
-		walletResp, err := walletClient.GetTransactionList(context.Background(), &wallet.TransactionListRequest{UserId: userId})
+		walletResp, err := walletClient.GetTransactionList(context.Background(), &walletpb.TransactionListRequest{UserId: userId})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mendapatkan transaksi wallet"})
 			return
@@ -58,14 +59,14 @@ func main() {
 
 	// Endpoint untuk top-up saldo
 	router.POST("/wallet/topup", func(c *gin.Context) {
-		var req wallet.TopUpRequest
+		var req walletpb.TopUpRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 			return
 		}
 
 		// Memanggil Wallet Server untuk melakukan top-up
-		resp, err := walletClient.TopUp(context.Background(), &wallet.TopUpRequest{
+		resp, err := walletClient.TopUp(context.Background(), &walletpb.TopUpRequest{
 			UserId: req.UserId,
 			Amount: req.Amount,
 		})
@@ -80,14 +81,14 @@ func main() {
 
 	// Endpoint untuk transfer saldo antar user
 	router.POST("/wallet/transfer", func(c *gin.Context) {
-		var req wallet.TransferRequest
+		var req walletpb.TransferRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 			return
 		}
 
 		// Memanggil Wallet Server untuk transfer saldo
-		resp, err := walletClient.Transfer(context.Background(), &wallet.TransferRequest{
+		resp, err := walletClient.Transfer(context.Background(), &walletpb.TransferRequest{
 			FromUserId: req.FromUserId,
 			ToUserId:   req.ToUserId,
 			Amount:     req.Amount,
@@ -110,7 +111,7 @@ func main() {
 		}
 
 		// Memanggil Wallet Server untuk mendapatkan daftar transaksi
-		resp, err := walletClient.GetTransactionList(context.Background(), &wallet.TransactionListRequest{UserId: userId})
+		resp, err := walletClient.GetTransactionList(context.Background(), &walletpb.TransactionListRequest{UserId: userId})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mendapatkan transaksi"})
 			return
