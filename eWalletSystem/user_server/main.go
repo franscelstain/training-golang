@@ -1,56 +1,28 @@
 package main
 
 import (
-	"context"
+	walletpb "eWalletSystem/proto/wallet/v1"
+	"eWalletSystem/user_server/handler"
 	"log"
 	"net"
 
-	walletpb "eWalletSystem/proto/wallet/v1"
-
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-type UserServiceServer struct {
-	walletpb.UnimplementedUserServiceServer // Tambahkan ini untuk kompatibilitas
-	users                                   map[string]*walletpb.UserResponse
-}
-
-// GetUser mengimplementasikan method GetUser yang didefinisikan di wallet.proto
-func (s *UserServiceServer) GetUser(ctx context.Context, req *walletpb.UserRequest) (*walletpb.UserResponse, error) {
-	user, exists := s.users[req.UserId]
-	if !exists {
-		return nil, status.Errorf(codes.NotFound, "User tidak ditemukan")
-	}
-	return user, nil
-}
-
 func main() {
-	// Membuat instance server gRPC baru
-	server := grpc.NewServer()
-
-	// Inisialisasi UserServiceServer dengan data in-memory
-	userService := &UserServiceServer{
-		users: map[string]*walletpb.UserResponse{
-			"user1": {UserId: "user1", Name: "John Doe", Email: "john@example.com", Balance: 1000},
-			"user2": {UserId: "user2", Name: "Jane Smith", Email: "jane@example.com", Balance: 1500},
-		},
-	}
-
-	// Mendaftarkan UserServiceServer ke gRPC server
-	walletpb.RegisterUserServiceServer(server, userService)
-
-	// Mendengarkan di port 50051
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("Gagal mendengarkan di port 50051: %v", err)
+		log.Fatalf("Failed to listen on port 50051: %v", err)
 	}
 
-	log.Println("User server berjalan di port 50051")
+	grpcServer := grpc.NewServer()
 
-	// Menjalankan gRPC server
-	if err := server.Serve(lis); err != nil {
-		log.Fatalf("Gagal menjalankan server gRPC: %v", err)
+	// Register UserServiceServer di gRPC server
+	userService := handler.NewUserServiceServer()
+	walletpb.RegisterUserServiceServer(grpcServer, userService)
+
+	log.Println("User server is running on port 50051")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("Failed to serve gRPC server: %v", err)
 	}
 }
